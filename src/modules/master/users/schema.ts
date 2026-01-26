@@ -14,7 +14,7 @@ export const schema: ISchema[] = [
   {
     collection: collectionName,
     unique: [['email'], ['trimmed_email']],
-    uniqueIfExists: [['username'], ['trimmed_username']],
+    uniqueIfExists: [['username'], ['trimmed_username'], ['nik']],
     indexes: [],
     schema: {
       bsonType: 'object',
