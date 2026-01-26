@@ -1,5 +1,6 @@
 import { BaseUseCase, type IUseCaseOutputFailed, type IUseCaseOutputSuccess } from '@point-hub/papi';
 
+import type { IUniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
 import type { IUuidService } from '@/modules/_shared/services/uuid.service';
 import type { IUserAgent } from '@/modules/_shared/types/user-agent.type';
 import type { IAuditLogService } from '@/modules/audit-logs/services/audit-log.service';
@@ -33,6 +34,7 @@ export interface IDeps {
   auditLogService: IAuditLogService
   uuidService: IUuidService
   passwordService: IPasswordService
+  uniqueValidationService: IUniqueValidationService
 }
 
 export interface ISuccessData {
@@ -92,6 +94,15 @@ export class VerifyEmailUseCase extends BaseUseCase<IInput, IDeps, ISuccessData>
         url: null,
       },
     });
+
+    // Validate uniqueness: single unique username field.
+    const uniqueNikErrors = await this.deps.uniqueValidationService.validate(
+      collectionName,
+      { nik: userEntity.data.nik },
+    );
+    if (uniqueNikErrors) {
+      return this.fail({ code: 422, message: 'Validation failed due to duplicate values.', errors: uniqueNikErrors });
+    }
 
     // Mark the user's email as verified in the repository.
     const response = await this.deps.verifyEmailRepository.handle(userResponse.data[0]._id, userEntity.data);

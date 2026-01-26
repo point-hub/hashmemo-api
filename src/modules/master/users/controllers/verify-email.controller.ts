@@ -1,6 +1,7 @@
 import { type IController, type IControllerInput } from '@point-hub/papi';
 
 import { SchemaUniqueValidationService } from '@/modules/_shared/services/schema-validation.service';
+import { UniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
 import { UuidService } from '@/modules/_shared/services/uuid.service';
 import { AuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 
@@ -26,6 +27,7 @@ export const verifyEmailController: IController = async (controllerInput: IContr
     const retrieveManyRepository = new RetrieveManyRepository(controllerInput.dbConnection, { session });
     const retrieveRepository = new RetrieveRepository(controllerInput.dbConnection, { session });
     const auditLogService = new AuditLogService(controllerInput.dbConnection, { session });
+    const uniqueValidationService = new UniqueValidationService(controllerInput.dbConnection, { session });
 
     // Initialize use case with dependencies
     const verifyEmailUseCase = new VerifyEmailUseCase({
@@ -35,6 +37,7 @@ export const verifyEmailController: IController = async (controllerInput: IContr
       auditLogService,
       uuidService: UuidService,
       passwordService: PasswordService,
+      uniqueValidationService,
     });
 
     // Execute business logic
