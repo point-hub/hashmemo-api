@@ -124,6 +124,7 @@ export class SignupUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
         subject: 'Please verify your email address',
         template: 'modules/master/users/emails/email-verification.hbs',
         context: {
+          name: userEntity.data.name,
           code: linkEmailVerification.code,
           url: linkEmailVerification.url,
         },
@@ -140,7 +141,8 @@ export class SignupUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
     }
 
     // Create an audit log entry for this operation.
-    const changes = this.deps.auditLogService.buildChanges({}, userEntity.data, { redactFields: ['password'] });
+    const changes = this.deps.auditLogService.buildChanges({}, userEntity.data, { redactFields: ['password', 'email_verification.code'] });
+
     const dataLog = {
       operation_id: this.deps.auditLogService.generateOperationId(),
       entity_type: collectionName,

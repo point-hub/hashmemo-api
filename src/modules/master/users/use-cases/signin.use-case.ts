@@ -42,6 +42,7 @@ export interface ISuccessData {
  * - Retrieve the user record matching the provided identity.
  * - Validate the provided password against the stored hash.
  * - Reject authentication if the user's email is not verified.
+ * - Reject authentication if the user's photo is not verified.
  * - Generate access and refresh tokens for the authenticated user.
  * - Return the authenticated user's details and tokens.
  */
@@ -74,8 +75,20 @@ export class SigninUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
     if (!user.email_verification || !user.email_verification.is_verified) {
       return this.fail({
         code: 422,
-        message: 'Email not verified',
+        message: 'Email is not verified',
         errors: { username: ['Email associated with this account has not been verified'] },
+      });
+    }
+
+    // Reject authentication if the user's photo is not verified.
+    if (user.email_verification.is_verified && user.photo_code) {
+      return this.fail({
+        code: 422,
+        message: 'Photo is not verified',
+        errors: {
+          username: ['Photo associated with this account has not been verified'],
+          photo_code: [user.photo_code],
+        },
       });
     }
 

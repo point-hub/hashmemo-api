@@ -24,5 +24,6 @@ export const authMiddleware: IMiddleware = async (middlewareInput: IMiddlewareIn
     username: user.username,
     name: user.name,
     role: user.role,
+    photo_url: user.photo_url,
   };
 };

@@ -1,12 +1,14 @@
 import { type IController, type IControllerInput } from '@point-hub/papi';
 
 import { SchemaUniqueValidationService } from '@/modules/_shared/services/schema-validation.service';
+import { UuidService } from '@/modules/_shared/services/uuid.service';
 import { AuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 
 import { RetrieveRepository } from '../repositories/retrieve.repository';
 import { RetrieveManyRepository } from '../repositories/retrieve-many.repository';
 import { UserVerifyEmailRepository } from '../repositories/verify-email.repository';
 import { verifyEmailRules } from '../rules/verify-email.rules';
+import { PasswordService } from '../services/password.service';
 import { VerifyEmailUseCase } from '../use-cases/verify-email.use-case';
 
 export const verifyEmailController: IController = async (controllerInput: IControllerInput) => {
@@ -31,6 +33,8 @@ export const verifyEmailController: IController = async (controllerInput: IContr
       retrieveManyRepository,
       retrieveRepository,
       auditLogService,
+      uuidService: UuidService,
+      passwordService: PasswordService,
     });
 
     // Execute business logic
@@ -44,6 +48,7 @@ export const verifyEmailController: IController = async (controllerInput: IContr
       filter: {
         code: controllerInput.req['body']['code'],
       },
+      data: controllerInput.req['body'],
     });
 
     // Handle failed response

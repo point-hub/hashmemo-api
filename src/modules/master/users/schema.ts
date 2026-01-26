@@ -18,7 +18,7 @@ export const schema: ISchema[] = [
     indexes: [],
     schema: {
       bsonType: 'object',
-      required: ['email', 'username', 'name'],
+      required: ['email', 'username'],
       additionalProperties: false,
       properties: {
         _id: {
@@ -49,9 +49,37 @@ export const schema: ISchema[] = [
           bsonType: 'string',
           description: 'A normalized email used for uniqueness checks (ignores dots and "+").',
         },
-        avatar_url: {
+        new_email: {
           bsonType: 'string',
-          description: 'URL of the user’s avatar image.',
+          description: 'The updated email address of the user.',
+        },
+        trimmed_new_email: {
+          bsonType: 'string',
+          description: 'A normalized updated email used for uniqueness checks (ignores dots and "+").',
+        },
+        photo_code: {
+          bsonType: 'string',
+          description: 'Internal code or identifier for the user profile photo.',
+        },
+        photo_url: {
+          bsonType: 'string',
+          description: 'URL of the user profile photo.',
+        },
+        photo_id_url: {
+          bsonType: 'string',
+          description: 'URL of the user identity document photo.',
+        },
+        birthdate: {
+          bsonType: 'string',
+          description: 'Birthdate of the user.',
+        },
+        nik: {
+          bsonType: 'string',
+          description: 'National identification number (NIK) of the user.',
+        },
+        initial_name: {
+          bsonType: 'string',
+          description: 'Initials derived from the user’s name.',
         },
         password: {
           bsonType: 'string',
@@ -62,6 +90,31 @@ export const schema: ISchema[] = [
           description: 'The notes of the user.',
         },
         email_verification: {
+          bsonType: 'object',
+          properties: {
+            code: {
+              bsonType: 'string',
+              description: 'The verification code used to confirm the user’s email.',
+            },
+            url: {
+              bsonType: 'string',
+              description: 'Verification URL sent to the user.',
+            },
+            requested_at: {
+              bsonType: 'date',
+              description: 'When the verification was requested.',
+            },
+            is_verified: {
+              bsonType: 'bool',
+              description: 'Whether the email has been verified.',
+            },
+            verified_at: {
+              bsonType: 'date',
+              description: 'When the email was verified.',
+            },
+          },
+        },
+        new_email_verification: {
           bsonType: 'object',
           properties: {
             code: {

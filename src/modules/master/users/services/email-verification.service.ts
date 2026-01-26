@@ -8,10 +8,17 @@ export interface IGenerateResponse {
 }
 
 export interface IEmailVerificationService {
-  generate(): IGenerateResponse;
+  generate(isNew?: boolean): IGenerateResponse;
 }
 
-export const generate = () => {
+export const generate = (isNew = false) => {
+  if (isNew) {
+    return {
+      code: tokenGenerate(),
+      url: `${apiConfig.clientUrl}/verify-new-email`,
+    };
+  }
+
   return {
     code: tokenGenerate(),
     url: `${apiConfig.clientUrl}/verify-email`,

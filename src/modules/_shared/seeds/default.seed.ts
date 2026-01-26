@@ -34,7 +34,15 @@ export const seed = async (dbConnection: IDatabase, options: Record<string, unkn
     notes: '',
     permissions,
   });
+
   const responseCreateRole = await roleFactory.create();
+  roleFactory.state({
+    code: 'ROLE/0002',
+    name: 'user',
+    notes: '',
+    permissions,
+  });
+  await roleFactory.create();
 
   console.info('[seed] users');
   const username = 'admin';

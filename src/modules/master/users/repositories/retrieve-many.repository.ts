@@ -41,9 +41,16 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
         return {
           _id: item._id,
           username: item.username,
+          password: item.password,
           name: item.name,
           email: item.email,
           notes: item.notes,
+          nik: item.nik,
+          birthdate: item.birthdate,
+          initial_name: item.initial_name,
+          photo_id_url: item.photo_id_url,
+          photo_url: item.photo_url,
+          photo_code: item.photo_code,
           role: item.role,
           is_archived: item.is_archived,
           created_at: item.created_at,
@@ -76,6 +83,11 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
     BaseMongoDBQueryFilters.addRegexFilter(filters, 'email', query?.['search.email']);
     BaseMongoDBQueryFilters.addRegexFilter(filters, 'role.code', query?.['search.role.code']);
     BaseMongoDBQueryFilters.addRegexFilter(filters, 'role.name', query?.['search.role.name']);
+
+    BaseMongoDBQueryFilters.addExactFilter(filters, 'email_verification.code', query?.['search.email_verification.code']);
+    BaseMongoDBQueryFilters.addExactFilter(filters, 'photo_code', query?.['search.photo_code']);
+
+    BaseMongoDBQueryFilters.addBooleanFilter(filters, 'is_archived', query?.['search.is_archived']);
 
     return filters.length > 0 ? [{ $match: { $and: filters } }] : [];
   }
@@ -144,9 +156,16 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
         $project: {
           _id: 1,
           username: 1,
+          password: 1,
           name: 1,
           email: 1,
           notes: 1,
+          nik: 1,
+          birthdate: 1,
+          initial_name: 1,
+          photo_id_url: 1,
+          photo_url: 1,
+          photo_code: 1,
           role: 1,
           is_archived: 1,
           created_at: 1,

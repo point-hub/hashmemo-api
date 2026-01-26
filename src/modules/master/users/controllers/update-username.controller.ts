@@ -7,11 +7,10 @@ import { AuditLogService } from '@/modules/audit-logs/services/audit-log.service
 
 import { RetrieveRepository } from '../repositories/retrieve.repository';
 import { UpdateRepository } from '../repositories/update.repository';
-import { updatePasswordRules } from '../rules/update-password.rules';
-import { PasswordService } from '../services/password.service';
-import { UpdatePasswordUseCase } from '../use-cases/update-password.use-case';
+import { updateUsernameRules } from '../rules/update-username.rules';
+import { UpdateUsernameUseCase } from '../use-cases/update-username.use-case';
 
-export const updatePasswordController: IController = async (controllerInput: IControllerInput) => {
+export const updateUsernameController: IController = async (controllerInput: IControllerInput) => {
   let session;
   try {
     // Start database session for transaction
@@ -19,7 +18,7 @@ export const updatePasswordController: IController = async (controllerInput: ICo
     session.startTransaction();
 
     // Validate request body against schema
-    SchemaUniqueValidationService.validate(controllerInput.req['body'], updatePasswordRules);
+    SchemaUniqueValidationService.validate(controllerInput.req['body'], updateUsernameRules);
 
     // Initialize repositories and utilities
     const updateRepository = new UpdateRepository(controllerInput.dbConnection, { session });
@@ -28,17 +27,16 @@ export const updatePasswordController: IController = async (controllerInput: ICo
     const uniqueValidationService = new UniqueValidationService(controllerInput.dbConnection, { session });
 
     // Initialize use case with dependencies
-    const updatePasswordUseCase = new UpdatePasswordUseCase({
+    const updateUsernameUseCase = new UpdateUsernameUseCase({
       updateRepository,
       retrieveRepository,
       ablyService: AblyService,
       auditLogService,
       uniqueValidationService,
-      passwordService: PasswordService,
     });
 
     // Execute business logic
-    const response = await updatePasswordUseCase.handle({
+    const response = await updateUsernameUseCase.handle({
       authUser: controllerInput.req['authUser'],
       userAgent: JSON.parse(
         Array.isArray(controllerInput.req.headers['client-user-agent'])

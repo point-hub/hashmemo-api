@@ -16,6 +16,12 @@ export interface IRetrieveOutput {
   trimmed_username?: string
   trimmed_email?: string
   notes: string
+  nik: string
+  birthdate: string
+  initial_name: string
+  photo_id_url: string
+  photo_url: string
+  photo_code: string
   role_id?: string
   avatar_url?: string
   password?: string
@@ -64,21 +70,28 @@ export class RetrieveRepository implements IRetrieveRepository {
     const result = response.data[0] as IRetrieveOutput;
 
     return {
-      _id: result._id as string,
-      username: result.username as string,
-      name: result.name as string,
-      email: result.email as string,
-      notes: result.notes as string,
+      _id: result._id,
+      username: result.username,
+      password: result.password,
+      name: result.name,
+      email: result.email,
+      notes: result.notes,
+      nik: result.nik,
+      birthdate: result.birthdate,
+      initial_name: result.initial_name,
+      photo_id_url: result.photo_id_url,
+      photo_url: result.photo_url,
+      photo_code: result.photo_code,
       role: {
-        _id: result.role._id as string,
-        code: result.role.code as string,
-        name: result.role.name as string,
-        permissions: result.role.permissions as string[],
+        _id: result.role._id,
+        code: result.role.code,
+        name: result.role.name,
+        permissions: result.role.permissions,
       },
-      password: result.password as string,
-      is_archived: result.is_archived as boolean,
-      created_at: result.created_at as Date,
-      created_by: result.created_by as IAuthUser,
+      email_verification: result.email_verification,
+      is_archived: result.is_archived,
+      created_at: result.created_at,
+      created_by: result.created_by,
     };
   }
 
@@ -160,9 +173,17 @@ export class RetrieveRepository implements IRetrieveRepository {
           _id: 1,
           name: 1,
           username: 1,
+          password: 1,
           email: 1,
           role: 1,
           notes: 1,
+          nik: 1,
+          birthdate: 1,
+          initial_name: 1,
+          photo_id_url: 1,
+          photo_url: 1,
+          photo_code: 1,
+          email_verification: 1,
           is_archived: 1,
           created_at: 1,
           created_by: 1,

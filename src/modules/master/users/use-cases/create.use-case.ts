@@ -71,10 +71,8 @@ export class CreateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
     // Normalizes data (trim).
     const userEntity = new UserEntity({
       username: input.data.username,
-      name: input.data.name,
       email: input.data.email,
       notes: input.data.notes,
-      password: await this.deps.passwordService.hash(input.data.password),
       role_id: input.data.role_id,
       email_verification: {
         is_verified: false,
@@ -87,12 +85,6 @@ export class CreateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
     });
     userEntity.trimmedUsername();
     userEntity.trimmedEmail();
-
-    // Validate uniqueness: single unique name field.
-    const uniqueNameErrors = await this.deps.uniqueValidationService.validate(collectionName, { name: input.data.name });
-    if (uniqueNameErrors) {
-      return this.fail({ code: 422, message: 'Validation failed due to duplicate values.', errors: uniqueNameErrors });
-    }
 
     // Validate uniqueness: single unique username field.
     const uniqueUsernameErrors = await this.deps.uniqueValidationService.validate(
@@ -118,7 +110,7 @@ export class CreateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
     const createResponse = await this.deps.createRepository.handle(userEntity.data);
 
     // Create an audit log entry for this operation.
-    const changes = this.deps.auditLogService.buildChanges({}, userEntity.data, { redactFields: ['password'] });
+    const changes = this.deps.auditLogService.buildChanges({}, userEntity.data, { redactFields: ['password', 'email_verification.code'] });
 
     const dataLog = {
       operation_id: this.deps.auditLogService.generateOperationId(),
@@ -154,6 +146,20 @@ export class CreateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       },
       data: dataLog,
     });
+
+    // Send the email verification message to the user.
+    await this.deps.emailService.send(
+      {
+        to: userEntity.data.email as string,
+        subject: 'Please verify your email address',
+        template: 'modules/master/users/emails/email-verification.hbs',
+        context: {
+          name: userEntity.data.name,
+          code: linkEmailVerification.code,
+          url: linkEmailVerification.url,
+        },
+      },
+    );
 
     // Return a success response.
     return this.success({

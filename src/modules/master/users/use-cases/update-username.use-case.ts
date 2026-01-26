@@ -1,6 +1,5 @@
 import { BaseUseCase, type IUseCaseOutputFailed, type IUseCaseOutputSuccess } from '@point-hub/papi';
 
-import type { IAuthorizationService } from '@/modules/_shared/services/authorization.service';
 import type { IUniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
 import type { IUserAgent } from '@/modules/_shared/types/user-agent.type';
 import type { IAblyService } from '@/modules/ably/services/ably.service';
@@ -12,20 +11,14 @@ import type { IRetrieveRepository } from '../repositories/retrieve.repository';
 import type { IUpdateRepository } from '../repositories/update.repository';
 
 export interface IInput {
+  ip: string
   authUser: IAuthUser
   userAgent: IUserAgent
-  ip: string
   filter: {
     _id: string
   }
   data: {
-    name: string
-    birthdate: string
-    nik: string
-    initial_name: string
-    notes?: string
-    role_id?: string
-    update_reason?: string
+    username: string
   }
 }
 
@@ -34,7 +27,6 @@ export interface IDeps {
   retrieveRepository: IRetrieveRepository
   ablyService: IAblyService
   auditLogService: IAuditLogService
-  authorizationService: IAuthorizationService
   uniqueValidationService: IUniqueValidationService
 }
 
@@ -44,29 +36,39 @@ export interface ISuccessData {
 }
 
 /**
- * Use case: Update user profile information.
+ * Use case: Update a user's username.
  *
  * Responsibilities:
- * - Update the user record in the repository.
+ * - Check if user is exists.
+ * - Update the user password to the database.
  * - Return a success response.
  */
-export class UpdateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
+export class UpdateUsernameUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
   async handle(input: IInput): Promise<IUseCaseOutputSuccess<ISuccessData> | IUseCaseOutputFailed> {
-    // Check whether the user is authorized to perform this action
-    const isAuthorized = this.deps.authorizationService.hasAccess(input.authUser.role?.permissions, 'users:create');
-    if (!isAuthorized) {
-      return this.fail({ code: 403, message: 'You do not have permission to perform this action.' });
+    // Check if user is exists.
+    const user = await this.deps.retrieveRepository.handle(input.filter._id);
+    if (!user) {
+      return this.fail({
+        code: 400,
+        message: 'User not found',
+      });
     }
 
     // Normalizes data (trim).
     const userEntity = new UserEntity({
-      name: input.data.name,
-      birthdate: input.data.birthdate,
-      nik: input.data.nik,
-      initial_name: input.data.initial_name,
-      notes: input.data.notes,
-      role_id: input.data.role_id,
+      username: input.data.username,
     });
+    userEntity.trimmedUsername();
+
+    // Validate uniqueness: single unique username field.
+    const uniqueUsernameErrors = await this.deps.uniqueValidationService.validate(
+      collectionName,
+      { trimmed_username: userEntity.data.trimmed_username },
+      { except: { _id: input.filter._id }, replaceErrorAttribute: { trimmed_username: 'username' } },
+    );
+    if (uniqueUsernameErrors) {
+      return this.fail({ code: 422, message: 'Validation failed due to duplicate values.', errors: uniqueUsernameErrors });
+    }
 
     // Check if the record exists
     const retrieveResponse = await this.deps.retrieveRepository.raw(input.filter._id);
@@ -83,7 +85,7 @@ export class UpdateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       return this.fail({ code: 400, message: 'No changes detected. Please modify at least one field before saving.' });
     }
 
-    // Update the user record in the repository.
+    // Update the user password to the database.
     const response = await this.deps.updateRepository.handle(input.filter._id, userEntity.data);
 
     // Create an audit log entry for this operation.
@@ -95,10 +97,9 @@ export class UpdateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       actor_type: 'user',
       actor_id: input.authUser._id,
       actor_name: input.authUser.username,
-      action: 'update',
-      module: 'user',
+      action: 'update-username',
+      module: 'users',
       system_reason: 'update data',
-      user_reason: input.data?.update_reason,
       changes: changes,
       metadata: {
         ip: input.ip,
@@ -112,7 +113,7 @@ export class UpdateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
 
     // Publish realtime notification event to the recipient’s channel.
     this.deps.ablyService.publish(`notifications:${input.authUser._id}`, 'logs:new', {
-      type: 'roles',
+      type: 'users',
       actor_id: input.authUser._id,
       recipient_id: input.authUser._id,
       is_read: false,

@@ -12,6 +12,7 @@ import masterPermissionRouter from './modules/master/permissions/router';
 import masterRoleRouter from './modules/master/roles/router';
 import masterUserRouter from './modules/master/users/router';
 import authRouter from './modules/master/users/router-auth';
+import storageRouter from './modules/storages/router';
 
 export interface IRoute {
   method: 'get' | 'post' | 'patch' | 'put' | 'delete'
@@ -31,6 +32,7 @@ export default async function (baseRouterInput: IBaseAppInput) {
   app.use('/v1/audit-logs', await auditLogRouter(baseRouterInput));
   app.use('/v1/auth', await authRouter(baseRouterInput));
   app.use('/v1/health', await healthRouter(baseRouterInput));
+  app.use('/v1/storages', await storageRouter(baseRouterInput));
   app.use('/v1/counters', await counterRouter(baseRouterInput));
   app.use('/v1/master/users', await masterUserRouter(baseRouterInput));
   app.use('/v1/master/permissions', await masterPermissionRouter(baseRouterInput));

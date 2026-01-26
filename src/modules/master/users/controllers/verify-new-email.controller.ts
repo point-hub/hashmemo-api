@@ -1,17 +1,15 @@
-import type { IController, IControllerInput } from '@point-hub/papi';
+import { type IController, type IControllerInput } from '@point-hub/papi';
 
 import { SchemaUniqueValidationService } from '@/modules/_shared/services/schema-validation.service';
-import { UniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
-import { AblyService } from '@/modules/ably/services/ably.service';
 import { AuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 
 import { RetrieveRepository } from '../repositories/retrieve.repository';
-import { UpdateRepository } from '../repositories/update.repository';
-import { updatePasswordRules } from '../rules/update-password.rules';
-import { PasswordService } from '../services/password.service';
-import { UpdatePasswordUseCase } from '../use-cases/update-password.use-case';
+import { RetrieveManyRepository } from '../repositories/retrieve-many.repository';
+import { UserVerifyEmailRepository } from '../repositories/verify-email.repository';
+import { verifyNewEmailRules } from '../rules/verify-new-email.rules';
+import { VerifyNewEmailUseCase } from '../use-cases/verify-new-email.use-case';
 
-export const updatePasswordController: IController = async (controllerInput: IControllerInput) => {
+export const verifyNewEmailController: IController = async (controllerInput: IControllerInput) => {
   let session;
   try {
     // Start database session for transaction
@@ -19,35 +17,33 @@ export const updatePasswordController: IController = async (controllerInput: ICo
     session.startTransaction();
 
     // Validate request body against schema
-    SchemaUniqueValidationService.validate(controllerInput.req['body'], updatePasswordRules);
+    SchemaUniqueValidationService.validate(controllerInput.req['body'], verifyNewEmailRules);
 
     // Initialize repositories and utilities
-    const updateRepository = new UpdateRepository(controllerInput.dbConnection, { session });
+    const verifyEmailRepository = new UserVerifyEmailRepository(controllerInput.dbConnection, { session });
+    const retrieveManyRepository = new RetrieveManyRepository(controllerInput.dbConnection, { session });
     const retrieveRepository = new RetrieveRepository(controllerInput.dbConnection, { session });
     const auditLogService = new AuditLogService(controllerInput.dbConnection, { session });
-    const uniqueValidationService = new UniqueValidationService(controllerInput.dbConnection, { session });
 
     // Initialize use case with dependencies
-    const updatePasswordUseCase = new UpdatePasswordUseCase({
-      updateRepository,
+    const verifyEmailUseCase = new VerifyNewEmailUseCase({
+      verifyEmailRepository,
+      retrieveManyRepository,
       retrieveRepository,
-      ablyService: AblyService,
       auditLogService,
-      uniqueValidationService,
-      passwordService: PasswordService,
     });
 
     // Execute business logic
-    const response = await updatePasswordUseCase.handle({
-      authUser: controllerInput.req['authUser'],
+    const response = await verifyEmailUseCase.handle({
       userAgent: JSON.parse(
         Array.isArray(controllerInput.req.headers['client-user-agent'])
           ? controllerInput.req.headers['client-user-agent'][0]
           : controllerInput.req.headers['client-user-agent'] ?? '{}',
       ),
       ip: controllerInput.req.ip ?? '',
-      filter: { _id: controllerInput.req['params']['id'] },
-      data: controllerInput.req['body'],
+      filter: {
+        code: controllerInput.req['body']['code'],
+      },
     });
 
     // Handle failed response

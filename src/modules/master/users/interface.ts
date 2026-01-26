@@ -6,7 +6,14 @@ export interface IUser {
   trimmed_username?: string
   email?: string
   trimmed_email?: string
-  avatar_url?: string
+  new_email?: string | null
+  trimmed_new_email?: string | null
+  birthdate?: string
+  initial_name?: string
+  nik?: string
+  photo_id_url?: string
+  photo_code?: string | null
+  photo_url?: string
   notes?: string | null
   password?: string
   email_verification?: {
@@ -16,6 +23,13 @@ export interface IUser {
     is_verified?: boolean
     verified_at?: Date | null
   }
+  new_email_verification?: {
+    code?: string | null
+    url?: string | null
+    requested_at?: Date | null
+    is_verified?: boolean
+    verified_at?: Date | null
+  } | null
   request_password?: {
     requested_at?: Date | null
     code?: string | null
@@ -31,6 +45,7 @@ export interface IAuthUser {
   name?: string
   username?: string
   email?: string
+  photo_url?: string
   role?: {
     _id?: string
     code?: string
