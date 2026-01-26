@@ -25,6 +25,7 @@ export interface IInput {
     initial_name: string
     notes?: string
     role_id?: string
+    photo_id_url?: string
     update_reason?: string
   }
 }
@@ -66,6 +67,7 @@ export class UpdateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       initial_name: input.data.initial_name,
       notes: input.data.notes,
       role_id: input.data.role_id,
+      photo_id_url: input.data.photo_id_url,
     });
 
     // Check if the record exists
