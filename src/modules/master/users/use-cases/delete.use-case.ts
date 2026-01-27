@@ -6,7 +6,7 @@ import type { IAblyService } from '@/modules/ably/services/ably.service';
 import type { IAuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 import type { IAuthUser } from '@/modules/master/users/interface';
 
-import { collectionName } from '../entity';
+import { collectionName, redactFields } from '../entity';
 import type { IDeleteRepository } from '../repositories/delete.repository';
 import type { IRetrieveRepository } from '../repositories/retrieve.repository';
 
@@ -63,7 +63,7 @@ export class DeleteUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
     const response = await this.deps.deleteRepository.handle(input.filter._id);
 
     // Create an audit log entry for this operation.
-    const changes = this.deps.auditLogService.buildChanges(retrieveResponse, {});
+    const changes = this.deps.auditLogService.buildChanges(retrieveResponse, {}, { redactFields });
     const dataLog = {
       operation_id: this.deps.auditLogService.generateOperationId(),
       entity_type: collectionName,
