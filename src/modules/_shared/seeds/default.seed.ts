@@ -46,14 +46,14 @@ export const seed = async (dbConnection: IDatabase, options: Record<string, unkn
 
   console.info('[seed] users');
   const username = 'admin';
-  const password = 'admin123';
+  const password = 'Admin123!';
   const userFactory = new UserFactory(dbConnection, options);
   userFactory.state({
     name: username,
     username: username,
     trimmed_username: username,
-    email: 'admin@example.com',
-    trimmed_email: 'admin@example.com',
+    email: 'hashmemo@imail.my.id',
+    trimmed_email: 'hashmemo@imail.my.id',
     password: await PasswordService.hash(password),
     email_verification: {
       is_verified: true,
