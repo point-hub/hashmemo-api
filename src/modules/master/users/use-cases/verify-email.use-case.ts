@@ -5,7 +5,7 @@ import type { IUuidService } from '@/modules/_shared/services/uuid.service';
 import type { IUserAgent } from '@/modules/_shared/types/user-agent.type';
 import type { IAuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 
-import { collectionName, UserEntity } from '../entity';
+import { collectionName, redactFields, UserEntity } from '../entity';
 import type { IRetrieveRepository } from '../repositories/retrieve.repository';
 import type { IRetrieveManyRepository } from '../repositories/retrieve-many.repository';
 import type { IVerifyEmailRepository } from '../repositories/verify-email.repository';
@@ -111,7 +111,7 @@ export class VerifyEmailUseCase extends BaseUseCase<IInput, IDeps, ISuccessData>
     const changes = this.deps.auditLogService.buildChanges(
       retrieveResponse,
       this.deps.auditLogService.mergeDefined(retrieveResponse, userEntity.data),
-      { redactFields: ['password', 'photo_code'] },
+      { redactFields },
     );
 
     const dataLog = {
