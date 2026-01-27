@@ -71,18 +71,14 @@ export class UpdateEmailUseCase extends BaseUseCase<IInput, IDeps, ISuccessData>
     userEntity.trimmedNewEmail();
 
     // Validate email uniqueness across all users.
-    await this.deps.uniqueValidationService.validate(
-      'users',
-      {
-        match: { trimmed_email: input.data.email },
-        replaceErrorAttribute: { trimmed_email: 'email' },
-      },
-      {
-        except: {
-          _id: input.filter._id,
-        },
-      },
+    const uniqueEmailErrors = await this.deps.uniqueValidationService.validate(
+      collectionName,
+      { trimmed_email: userEntity.data.trimmed_new_email },
+      { replaceErrorAttribute: { trimmed_email: 'email' } },
     );
+    if (uniqueEmailErrors) {
+      return this.fail({ code: 422, message: 'Validation failed due to duplicate values.', errors: uniqueEmailErrors });
+    }
 
     // Check if the record exists
     const retrieveResponse = await this.deps.retrieveRepository.raw(input.filter._id);
