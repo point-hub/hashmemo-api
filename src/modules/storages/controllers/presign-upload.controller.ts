@@ -12,7 +12,7 @@ export const presignUploadController: IController = async (controllerInput: ICon
     bucket: s3Config.bucket,
   });
 
-  const publicPath = `/hashmemo-staging/${tokenGenerate()}.${controllerInput.req['body'].ext}`;
+  const publicPath = `/hashmemo/${tokenGenerate()}.${controllerInput.req['body'].ext}`;
 
   const uploadUrl = client.presign(publicPath, {
     bucket: s3Config.bucket,
