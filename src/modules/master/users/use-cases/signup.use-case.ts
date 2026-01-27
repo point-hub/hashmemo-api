@@ -83,6 +83,7 @@ export class SignupUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
         code: linkEmailVerification.code,
         url: linkEmailVerification.url,
       },
+      is_archived: false,
       created_at: new Date(),
     });
     userEntity.trimmedEmail();

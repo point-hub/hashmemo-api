@@ -84,6 +84,7 @@ export class CreateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       optional_composite_unique_2: input.data.optional_composite_unique_2,
       xxx_composite_unique_1: input.data.xxx_composite_unique_1,
       xxx_composite_unique_2: input.data.xxx_composite_unique_2,
+      is_archived: false,
       created_at: new Date(),
       created_by_id: input.authUser._id,
     });
