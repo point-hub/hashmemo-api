@@ -15,6 +15,7 @@ const makeRouter = async (routerInput: IBaseAppInput) => {
   });
 
   router.post('/presign-upload', useController(controller.presignUploadController));
+  router.get('/get-pdf', useController(controller.getPdfController));
 
   return router;
 };

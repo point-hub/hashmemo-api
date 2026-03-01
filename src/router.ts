@@ -6,6 +6,8 @@ import { EmailService } from './modules/_shared/services/email.service';
 import ablyRouter from './modules/ably/router';
 import auditLogRouter from './modules/audit-logs/router';
 import counterRouter from './modules/counters/router';
+import fileRouter from './modules/files/router';
+import folderRouter from './modules/folders/router';
 import healthRouter from './modules/health/router';
 import masterExampleRouter from './modules/master/examples/router';
 import masterPermissionRouter from './modules/master/permissions/router';
@@ -38,6 +40,8 @@ export default async function (baseRouterInput: IBaseAppInput) {
   app.use('/v1/master/permissions', await masterPermissionRouter(baseRouterInput));
   app.use('/v1/master/roles', await masterRoleRouter(baseRouterInput));
   app.use('/v1/master/examples', await masterExampleRouter(baseRouterInput));
+  app.use('/v1/folders', await folderRouter(baseRouterInput));
+  app.use('/v1/files', await fileRouter(baseRouterInput));
 
   /**
    * Rendered email templates
