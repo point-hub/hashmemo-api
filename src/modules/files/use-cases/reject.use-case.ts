@@ -65,6 +65,9 @@ export class RejectUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
     // Normalizes data (trim).
     const fileEntity = new FileEntity({
       status: 'rejected',
+      rejected_reason: input.data.reason,
+      rejected_at: new Date(),
+      rejected_by_id: input.authUser._id,
     });
 
     // Validate uniqueness: single unique name field.

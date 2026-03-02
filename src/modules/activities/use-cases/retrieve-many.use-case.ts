@@ -3,7 +3,6 @@ import { BaseUseCase, type IQuery, type IUseCaseOutputFailed, type IUseCaseOutpu
 import type { IAuthorizationService } from '@/modules/_shared/services/authorization.service';
 import type { IAuthUser } from '@/modules/master/users/interface';
 
-import type { IApproval, ISignature } from '../repositories/retrieve.repository';
 import type { IRetrieveManyRepository } from '../repositories/retrieve-many.repository';
 
 export interface IInput {
@@ -19,18 +18,10 @@ export interface IDeps {
 export interface ISuccessData {
   data: {
     _id?: string
-    folder_id?: string
-    pdf_url?: string
     name?: string
-    approvals: IApproval[]
-    signatures: ISignature[]
-    status: string
     is_archived?: boolean
     created_at?: Date
     created_by?: IAuthUser
-    voided_at?: Date
-    voided_by?: IAuthUser
-    voided_reason?: string
   }[]
   pagination: {
     page: number
@@ -41,7 +32,7 @@ export interface ISuccessData {
 }
 
 /**
- * Use case: Retrieve Files.
+ * Use case: Retrieve Activities.
  *
  * Responsibilities:
  * - Check whether the user is authorized to perform this action
@@ -51,7 +42,6 @@ export interface ISuccessData {
  */
 export class RetrieveManyUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
   async handle(input: IInput): Promise<IUseCaseOutputSuccess<ISuccessData> | IUseCaseOutputFailed> {
-    input.query['user_id'] = input.authUser._id;
     // Retrieve all data from the database.
     const response = await this.deps.retrieveManyRepository.handle(input.query);
 
@@ -65,21 +55,15 @@ export class RetrieveManyUseCase extends BaseUseCase<IInput, IDeps, ISuccessData
       data: response.data.map(item => {
         const mapped = {
           _id: item._id,
-          folder_id: item.folder_id,
-          pdf_url: item.pdf_url,
           name: item.name,
-          approvals: item.approvals,
-          signatures: item.signatures,
-          status: item.status,
           is_archived: item.is_archived,
           created_at: item.created_at,
-          created_by: item.created_by,
-          voided_at: item.voided_at,
-          voided_by: item.voided_by,
-          voided_reason: item.voided_reason,
-          rejected_at: item.rejected_at,
-          rejected_by: item.rejected_by,
-          rejected_reason: item.rejected_reason,
+          created_by: {
+            _id: item.created_by?._id,
+            username: item.created_by?.username,
+            name: item.created_by?.name,
+            email: item.created_by?.email,
+          },
         };
 
         // If no fields requested → return full object
@@ -88,7 +72,7 @@ export class RetrieveManyUseCase extends BaseUseCase<IInput, IDeps, ISuccessData
         // Otherwise → return only requested fields
         return Object.fromEntries(
           Object.entries(mapped).filter(([key]) => fields.includes(key)),
-        ) as typeof mapped;
+        );
       }),
       pagination: response.pagination,
     });

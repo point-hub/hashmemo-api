@@ -5,104 +5,82 @@ import type { IUniqueValidationService } from '@/modules/_shared/services/unique
 import type { IUserAgent } from '@/modules/_shared/types/user-agent.type';
 import type { IAblyService } from '@/modules/ably/services/ably.service';
 import type { IAuditLogService } from '@/modules/audit-logs/services/audit-log.service';
+import type { ICodeGeneratorService } from '@/modules/counters/services/code-generator.service';
 import type { IAuthUser } from '@/modules/master/users/interface';
 
-import { collectionName, FileEntity } from '../entity';
-import type { IRetrieveRepository } from '../repositories/retrieve.repository';
-import type { ISignRepository } from '../repositories/sign.repository';
+import { collectionName, ActivityEntity } from '../entity';
+import type { ICreateRepository } from '../repositories/create.repository';
 
 export interface IInput {
   authUser: IAuthUser
   userAgent: IUserAgent
   ip: string
-  filter: {
-    _id: string
-  }
   data: {
-    otp?: string
-    update_reason?: string
+    name: string
   }
 }
 
 export interface IDeps {
-  signRepository: ISignRepository
-  retrieveRepository: IRetrieveRepository
+  createRepository: ICreateRepository
   ablyService: IAblyService
   auditLogService: IAuditLogService
   authorizationService: IAuthorizationService
+  codeGeneratorService: ICodeGeneratorService
   uniqueValidationService: IUniqueValidationService
 }
 
 export interface ISuccessData {
-  matched_count: number
-  modified_count: number
+  inserted_id: string
 }
 
 /**
- * Use case: Update File.
+ * Use case: Create Activity.
  *
  * Responsibilities:
- * - Check if the record exists
+ * - Check whether the user is authorized to perform this action.
  * - Normalizes data (trim).
  * - Validate uniqueness: single unique name field.
- * - Reject update when no fields have changed
  * - Save the data to the database.
+ * - Increment the code counter.
  * - Create an audit log entry for this operation.
  * - Publish realtime notification event to the recipient’s channel.
  * - Return a success response.
  */
-export class SignUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
+export class CreateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
   async handle(input: IInput): Promise<IUseCaseOutputSuccess<ISuccessData> | IUseCaseOutputFailed> {
-    // Check if the record exists.
-    const retrieveResponse = await this.deps.retrieveRepository.raw(input.filter._id);
-    if (!retrieveResponse) {
-      return this.fail({ code: 404, message: 'Resource not found' });
-    }
-
     // Normalizes data (trim).
-    const fileEntity = new FileEntity({
-      status: 'rejected',
+    const activityEntity = new ActivityEntity({
+      name: input.data.name,
+      is_archived: false,
+      created_at: new Date(),
+      created_by_id: input.authUser._id,
     });
 
-    // Reject update when no fields have changed
-    const changes = this.deps.auditLogService.buildChanges(
-      retrieveResponse,
-      this.deps.auditLogService.mergeDefined(retrieveResponse, fileEntity.data),
-    );
-    if (changes.summary.fields?.length === 0) {
-      return this.fail({ code: 400, message: 'No changes detected. Please modify at least one field before saving.' });
+    // Validate uniqueness: single unique name field.
+    const uniqueNameErrors = await this.deps.uniqueValidationService.validate(collectionName, { name: input.data.name });
+    if (uniqueNameErrors) {
+      return this.fail({ code: 422, message: 'Validation failed due to duplicate values.', errors: uniqueNameErrors });
     }
 
     // Save the data to the database.
-    const response = await this.deps.signRepository.handle({
-      _id: input.filter._id,
-      user_id: input.authUser._id!,
-      otp: input.data.otp!,
-      ip: input.ip,
-    });
+    const createResponse = await this.deps.createRepository.handle(activityEntity.data);
 
-    // const retrieveResponse2 = await this.deps.retrieveRepository.raw(input.filter._id);
-    // const allSigned = retrieveResponse2?.signatures?.every(
-    //   (sig: { signed: boolean }) => sig.signed === true,
-    // );
-
-    // if (allSigned) {
-    //   //
-    // }
+    // Increment the code counter.
+    await this.deps.codeGeneratorService.increment(collectionName);
 
     // Create an audit log entry for this operation.
+    const changes = this.deps.auditLogService.buildChanges({}, activityEntity.data);
     const dataLog = {
       operation_id: this.deps.auditLogService.generateOperationId(),
       entity_type: collectionName,
-      entity_id: input.filter._id,
-      entity_ref: `${retrieveResponse.name}`,
+      entity_id: createResponse.inserted_id,
+      entity_ref: `${input.data.name}`,
       actor_type: 'user',
       actor_id: input.authUser._id,
       actor_name: input.authUser.username,
-      action: 'update',
-      module: 'file',
-      system_reason: 'update data',
-      user_reason: input.data?.update_reason,
+      action: 'create',
+      module: 'activity',
+      system_reason: 'insert data',
       changes: changes,
       metadata: {
         ip: input.ip,
@@ -116,21 +94,20 @@ export class SignUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
 
     // Publish realtime notification event to the recipient’s channel.
     this.deps.ablyService.publish(`notifications:${input.authUser._id}`, 'logs:new', {
-      type: 'files',
+      type: 'activities',
       actor_id: input.authUser._id,
       recipient_id: input.authUser._id,
       is_read: false,
       created_at: new Date(),
       entities: {
-        files: input.filter._id,
+        activities: createResponse.inserted_id,
       },
       data: dataLog,
     });
 
     // Return a success response.
     return this.success({
-      matched_count: response.matched_count,
-      modified_count: response.modified_count,
+      inserted_id: createResponse.inserted_id,
     });
   }
 }

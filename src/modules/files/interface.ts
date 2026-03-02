@@ -16,4 +16,7 @@ export interface IFile {
   voided_at?: Date
   voided_by_id?: string
   voided_reason?: string
+  rejected_at?: Date
+  rejected_by_id?: string
+  rejected_reason?: string
 }

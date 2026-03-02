@@ -4,6 +4,7 @@ import express, { type Express, type Request, type Response } from 'express';
 import type { IBaseAppInput } from './app';
 import { EmailService } from './modules/_shared/services/email.service';
 import ablyRouter from './modules/ably/router';
+import activityRouter from './modules/activities/router';
 import auditLogRouter from './modules/audit-logs/router';
 import counterRouter from './modules/counters/router';
 import fileRouter from './modules/files/router';
@@ -42,6 +43,7 @@ export default async function (baseRouterInput: IBaseAppInput) {
   app.use('/v1/master/examples', await masterExampleRouter(baseRouterInput));
   app.use('/v1/folders', await folderRouter(baseRouterInput));
   app.use('/v1/files', await fileRouter(baseRouterInput));
+  app.use('/v1/activities', await activityRouter(baseRouterInput));
 
   /**
    * Rendered email templates

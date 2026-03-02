@@ -2,8 +2,15 @@ import type { IDatabase } from '@point-hub/papi';
 
 import { collectionName } from '../entity';
 
+export interface IData {
+  _id: string
+  user_id: string
+  otp: string
+  ip: string
+}
+
 export interface ISignRepository {
-  handle(_id: string, user_id: string, otp: string): Promise<ISignOutput>
+  handle(data: IData): Promise<ISignOutput>
 }
 
 export interface ISignOutput {
@@ -17,9 +24,9 @@ export class SignRepository implements ISignRepository {
     public options?: Record<string, unknown>,
   ) { }
 
-  async handle(_id: string, user_id: string, otp: string): Promise<ISignOutput> {
+  async handle(data: IData): Promise<ISignOutput> {
     const response = await this.database.collection(collectionName).updateOne(
-      { _id: _id },
+      { _id: data._id },
       [
         {
           $set: {
@@ -31,14 +38,15 @@ export class SignRepository implements ISignRepository {
                   $cond: [
                     {
                       $and: [
-                        { $eq: ['$$sig.user_id', user_id] },
-                        { $eq: ['$$sig.otp', otp] },
+                        { $eq: ['$$sig.user_id', data.user_id] },
+                        { $eq: ['$$sig.otp', data.otp] },
                       ],
                     },
                     {
                       $mergeObjects: [
                         '$$sig',
                         {
+                          ip: data.ip,
                           signed: true,
                           signed_at: new Date(),
                         },
