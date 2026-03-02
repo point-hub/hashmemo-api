@@ -14,6 +14,8 @@ export interface IRetrieveOutput {
   username: string
   email: string
   action: string
+  file_id: string
+  file_name: string
   ip: string
   created_at: Date
 }
@@ -41,6 +43,8 @@ export class RetrieveRepository implements IRetrieveRepository {
       name: response.data[0].name,
       email: response.data[0].email,
       action: response.data[0].action,
+      file_id: response.data[0].file_id,
+      file_name: response.data[0].file_name,
       ip: response.data[0].ip,
       created_at: response.data[0].created_at,
     };
@@ -68,6 +72,8 @@ export class RetrieveRepository implements IRetrieveRepository {
           name: 1,
           email: 1,
           action: 1,
+          file_id: 1,
+          file_name: 1,
           ip: 1,
           created_at: 1,
         },

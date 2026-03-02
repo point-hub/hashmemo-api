@@ -23,6 +23,8 @@ export interface ISuccessData {
   name: string
   email: string
   action: string
+  file_id: string
+  file_name: string
   ip: string
   created_at: Date
 }
@@ -52,6 +54,8 @@ export class RetrieveUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       username: response.username,
       email: response.email,
       action: response.action,
+      file_id: response.file_id,
+      file_name: response.file_name,
       ip: response.ip,
       created_at: response.created_at,
     });

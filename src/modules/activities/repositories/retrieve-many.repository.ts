@@ -42,6 +42,8 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
           name: item.name,
           email: item.email,
           action: item.action,
+          file_id: item.file_id,
+          file_name: item.file_name,
           ip: item.ip,
           created_at: item.created_at,
         };
@@ -73,6 +75,7 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
 
     // Filter exact field
     BaseMongoDBQueryFilters.addExactFilter(filters, 'file_id', query?.['search.file_id']);
+    BaseMongoDBQueryFilters.addExactFilter(filters, 'user_id', query?.['search.user_id']);
     BaseMongoDBQueryFilters.addExactFilter(filters, 'action', query?.['search.action']);
     BaseMongoDBQueryFilters.addExactFilter(filters, 'ip', query?.['search.ip']);
 
@@ -90,6 +93,8 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
           name: 1,
           email: 1,
           action: 1,
+          file_id: 1,
+          file_name: 1,
           ip: 1,
           created_at: 1,
         },

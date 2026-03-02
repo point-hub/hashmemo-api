@@ -59,6 +59,8 @@ export class RetrieveManyUseCase extends BaseUseCase<IInput, IDeps, ISuccessData
           name: item.name,
           email: item.email,
           action: item.action,
+          file_id: item.file_id,
+          file_name: item.file_name,
           ip: item.ip,
           created_at: item.created_at,
         };

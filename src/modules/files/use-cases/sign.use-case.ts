@@ -89,6 +89,7 @@ export class SignUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       email: input.authUser.email,
       action: 'sign',
       file_id: input.filter._id,
+      file_name: retrieveResponse.name,
       ip: input.ip,
       created_at: new Date(),
     });

@@ -86,6 +86,7 @@ export class CreateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       email: input.authUser.email,
       action: 'create',
       file_id: createResponse.inserted_id,
+      file_name: input.data.name,
       ip: input.ip,
       created_at: new Date(),
     });
