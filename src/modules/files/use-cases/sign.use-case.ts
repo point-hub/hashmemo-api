@@ -82,6 +82,11 @@ export class SignUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       otp: input.data.otp!,
       ip: input.ip,
     });
+
+    if (response.modified_count === 0) {
+      return this.fail({ code: 400, message: 'Wrong OTP code.' });
+    }
+
     await this.deps.activityCreateRepository.handle({
       user_id: input.authUser._id,
       username: input.authUser.username,
