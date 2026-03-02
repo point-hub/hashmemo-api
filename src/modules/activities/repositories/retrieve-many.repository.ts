@@ -62,7 +62,7 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
     // General search across multiple fields
     if (query?.['search.all']) {
       const searchRegex = { $regex: query?.['search.all'], $options: 'i' };
-      const fields = ['code', 'name', 'composite_unique_1', 'composite_unique_2', 'age', 'gender', 'optional_unique_1'];
+      const fields = ['action', 'file_name', 'name', 'username'];
       filters.push({
         $or: fields.map((field) => ({ [field]: searchRegex })),
       });
