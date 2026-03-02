@@ -3,8 +3,6 @@ import type { IController, IControllerInput } from '@point-hub/papi';
 export const getPdfController: IController = async (controllerInput: IControllerInput) => {
   const { url } = controllerInput.req.query as { url?: string };
 
-  console.log(url);
-
   if (!url) {
     controllerInput.res.status(400).json({
       message: 'URL is required',

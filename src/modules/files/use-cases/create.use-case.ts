@@ -4,6 +4,7 @@ import type { IAuthorizationService } from '@/modules/_shared/services/authoriza
 import type { IUniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
 import type { IUserAgent } from '@/modules/_shared/types/user-agent.type';
 import type { IAblyService } from '@/modules/ably/services/ably.service';
+import type { ICreateRepository as IActivityCreateRepository } from '@/modules/activities/repositories/create.repository';
 import type { IAuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 import type { ICodeGeneratorService } from '@/modules/counters/services/code-generator.service';
 import type { IAuthUser } from '@/modules/master/users/interface';
@@ -30,6 +31,7 @@ export interface IInput {
 }
 
 export interface IDeps {
+  activityCreateRepository: IActivityCreateRepository
   createRepository: ICreateRepository
   retrieveManyRepository: IRetrieveManyRepository
   ablyService: IAblyService
@@ -77,6 +79,16 @@ export class CreateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
 
     // Save the data to the database.
     const createResponse = await this.deps.createRepository.handle(fileEntity.data);
+    await this.deps.activityCreateRepository.handle({
+      user_id: input.authUser._id,
+      username: input.authUser.username,
+      name: input.authUser.name,
+      email: input.authUser.email,
+      action: 'create',
+      file_id: createResponse.inserted_id,
+      ip: input.ip,
+      created_at: new Date(),
+    });
 
     // Increment the code counter.
     await this.deps.codeGeneratorService.increment(collectionName);

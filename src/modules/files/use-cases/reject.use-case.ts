@@ -4,6 +4,7 @@ import type { IAuthorizationService } from '@/modules/_shared/services/authoriza
 import type { IUniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
 import type { IUserAgent } from '@/modules/_shared/types/user-agent.type';
 import type { IAblyService } from '@/modules/ably/services/ably.service';
+import type { ICreateRepository as IActivityCreateRepository } from '@/modules/activities/repositories/create.repository';
 import type { IAuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 import type { IAuthUser } from '@/modules/master/users/interface';
 
@@ -28,6 +29,7 @@ export interface IInput {
 }
 
 export interface IDeps {
+  activityCreateRepository: IActivityCreateRepository
   updateRepository: IUpdateRepository
   retrieveRepository: IRetrieveRepository
   ablyService: IAblyService
@@ -91,6 +93,16 @@ export class RejectUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
 
     // Save the data to the database.
     const response = await this.deps.updateRepository.handle(input.filter._id, fileEntity.data);
+    await this.deps.activityCreateRepository.handle({
+      user_id: input.authUser._id,
+      username: input.authUser.username,
+      name: input.authUser.name,
+      email: input.authUser.email,
+      action: 'reject',
+      file_id: input.filter._id,
+      ip: input.ip,
+      created_at: new Date(),
+    });
 
     // Create an audit log entry for this operation.
     const dataLog = {

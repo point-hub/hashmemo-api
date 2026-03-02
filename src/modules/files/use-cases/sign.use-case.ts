@@ -4,6 +4,7 @@ import type { IAuthorizationService } from '@/modules/_shared/services/authoriza
 import type { IUniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
 import type { IUserAgent } from '@/modules/_shared/types/user-agent.type';
 import type { IAblyService } from '@/modules/ably/services/ably.service';
+import type { ICreateRepository as IActivityCreateRepository } from '@/modules/activities/repositories/create.repository';
 import type { IAuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 import type { IAuthUser } from '@/modules/master/users/interface';
 
@@ -25,6 +26,7 @@ export interface IInput {
 }
 
 export interface IDeps {
+  activityCreateRepository: IActivityCreateRepository
   signRepository: ISignRepository
   retrieveRepository: IRetrieveRepository
   ablyService: IAblyService
@@ -80,15 +82,16 @@ export class SignUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       otp: input.data.otp!,
       ip: input.ip,
     });
-
-    // const retrieveResponse2 = await this.deps.retrieveRepository.raw(input.filter._id);
-    // const allSigned = retrieveResponse2?.signatures?.every(
-    //   (sig: { signed: boolean }) => sig.signed === true,
-    // );
-
-    // if (allSigned) {
-    //   //
-    // }
+    await this.deps.activityCreateRepository.handle({
+      user_id: input.authUser._id,
+      username: input.authUser.username,
+      name: input.authUser.name,
+      email: input.authUser.email,
+      action: 'sign',
+      file_id: input.filter._id,
+      ip: input.ip,
+      created_at: new Date(),
+    });
 
     // Create an audit log entry for this operation.
     const dataLog = {

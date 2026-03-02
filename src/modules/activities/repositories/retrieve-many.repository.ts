@@ -30,7 +30,6 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
     const pipeline: IPipeline[] = [];
 
     pipeline.push(...this.pipeQueryFilter(query));
-    pipeline.push(...this.pipeJoinCreatedById());
     pipeline.push(...this.pipeProject());
 
     const response = await this.database.collection(collectionName).aggregate<IRetrieveOutput>(pipeline, query, this.options);
@@ -39,21 +38,12 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
       data: response.data.map(item => {
         return {
           _id: item._id,
-          code: item.code,
+          username: item.username,
           name: item.name,
-          age: item.age,
-          gender: item.gender,
-          notes: item.notes,
-          composite_unique_1: item.composite_unique_1,
-          composite_unique_2: item.composite_unique_2,
-          optional_unique: item.optional_unique,
-          optional_composite_unique_1: item.optional_composite_unique_1,
-          optional_composite_unique_2: item.optional_composite_unique_2,
-          xxx_composite_unique_1: item.xxx_composite_unique_1,
-          xxx_composite_unique_2: item.xxx_composite_unique_2,
-          is_archived: item.is_archived,
+          email: item.email,
+          action: item.action,
+          ip: item.ip,
           created_at: item.created_at,
-          created_by: item.created_by,
         };
       }),
       pagination: response.pagination,
@@ -77,50 +67,18 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
     }
 
     // Filter specific field
-    BaseMongoDBQueryFilters.addRegexFilter(filters, 'code', query?.['search.code']);
+    BaseMongoDBQueryFilters.addRegexFilter(filters, 'username', query?.['search.username']);
     BaseMongoDBQueryFilters.addRegexFilter(filters, 'name', query?.['search.name']);
-    BaseMongoDBQueryFilters.addRegexFilter(filters, 'composite_unique_1', query?.['search.composite_unique_1']);
-    BaseMongoDBQueryFilters.addRegexFilter(filters, 'composite_unique_2', query?.['search.composite_unique_2']);
-    BaseMongoDBQueryFilters.addRegexFilter(filters, 'optional_unique', query?.['search.optional_unique']);
+    BaseMongoDBQueryFilters.addRegexFilter(filters, 'email', query?.['search.email']);
 
     // Filter exact field
-    BaseMongoDBQueryFilters.addExactFilter(filters, 'gender', query?.['search.gender']);
+    BaseMongoDBQueryFilters.addExactFilter(filters, 'file_id', query?.['search.file_id']);
+    BaseMongoDBQueryFilters.addExactFilter(filters, 'action', query?.['search.action']);
+    BaseMongoDBQueryFilters.addExactFilter(filters, 'ip', query?.['search.ip']);
 
     // Apply numeric filter using the helper function
-    BaseMongoDBQueryFilters.addNumberFilter(filters, 'age', query?.['search.age']);
-
-    BaseMongoDBQueryFilters.addBooleanFilter(filters, 'is_archived', query?.['search.is_archived']);
-
+    console.log(filters);
     return filters.length > 0 ? [{ $match: { $and: filters } }] : [];
-  }
-
-  private pipeJoinCreatedById(): IPipeline[] {
-    return [
-      {
-        $lookup: {
-          from: 'users',
-          let: { userId: '$created_by_id' },
-          pipeline: [
-            { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
-            {
-              $project: {
-                _id: 1,
-                name: 1,
-                username: 1,
-                email: 1,
-              },
-            },
-          ],
-          as: 'created_by',
-        },
-      },
-      {
-        $unwind: {
-          path: '$created_by',
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-    ];
   }
 
   private pipeProject(): IPipeline[] {
@@ -128,21 +86,12 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
       {
         $project: {
           _id: 1,
-          code: 1,
+          username: 1,
           name: 1,
-          age: 1,
-          gender: 1,
-          notes: 1,
-          composite_unique_1: 1,
-          composite_unique_2: 1,
-          optional_unique: 1,
-          optional_composite_unique_1: 1,
-          optional_composite_unique_2: 1,
-          xxx_composite_unique_1: 1,
-          xxx_composite_unique_2: 1,
-          is_archived: 1,
+          email: 1,
+          action: 1,
+          ip: 1,
           created_at: 1,
-          created_by: 1,
         },
       },
     ];

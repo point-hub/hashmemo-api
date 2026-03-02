@@ -4,6 +4,7 @@ import { AuthorizationService } from '@/modules/_shared/services/authorization.s
 import { SchemaUniqueValidationService } from '@/modules/_shared/services/schema-validation.service';
 import { UniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
 import { AblyService } from '@/modules/ably/services/ably.service';
+import { CreateRepository as ActivityCreateRepository } from '@/modules/activities/repositories/create.repository';
 import { AuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 
 import { RetrieveRepository } from '../repositories/retrieve.repository';
@@ -26,9 +27,11 @@ export const voidController: IController = async (controllerInput: IControllerIn
     const retrieveRepository = new RetrieveRepository(controllerInput.dbConnection, { session });
     const auditLogService = new AuditLogService(controllerInput.dbConnection, { session });
     const uniqueValidationService = new UniqueValidationService(controllerInput.dbConnection, { session });
+    const activityCreateRepository = new ActivityCreateRepository(controllerInput.dbConnection, { session });
 
     // Initialize use case with dependencies
     const voidUseCase = new VoidUseCase({
+      activityCreateRepository,
       updateRepository,
       retrieveRepository,
       ablyService: AblyService,

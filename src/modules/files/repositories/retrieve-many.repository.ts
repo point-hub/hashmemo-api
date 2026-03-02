@@ -80,7 +80,6 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
       });
     }
 
-    console.log(query);
     if (query?.['search.tab'] === '1') {
       BaseMongoDBQueryFilters.addExactFilter(filters, 'created_by_id', query?.['user_id']);
     }
@@ -96,7 +95,7 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
     BaseMongoDBQueryFilters.addExactFilter(filters, 'hash', query?.['search.hash']);
 
     BaseMongoDBQueryFilters.addBooleanFilter(filters, 'is_archived', query?.['search.is_archived']);
-    console.log(filters);
+
     return filters.length > 0 ? [{ $match: { $and: filters } }] : [];
   }
 

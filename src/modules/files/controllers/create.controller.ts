@@ -4,6 +4,7 @@ import { AuthorizationService } from '@/modules/_shared/services/authorization.s
 import { SchemaUniqueValidationService } from '@/modules/_shared/services/schema-validation.service';
 import { UniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
 import { AblyService } from '@/modules/ably/services/ably.service';
+import { CreateRepository as ActivityCreateRepository } from '@/modules/activities/repositories/create.repository';
 import { AuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 import { CodeGeneratorService } from '@/modules/counters/services/code-generator.service';
 
@@ -23,6 +24,7 @@ export const createController: IController = async (controllerInput: IController
     SchemaUniqueValidationService.validate(controllerInput.req['body'], createRules);
 
     // Initialize repositories and utilities
+    const activityCreateRepository = new ActivityCreateRepository(controllerInput.dbConnection, { session });
     const createRepository = new CreateRepository(controllerInput.dbConnection, { session });
     const retrieveManyRepository = new RetrieveManyRepository(controllerInput.dbConnection, { session });
     const auditLogService = new AuditLogService(controllerInput.dbConnection, { session });
@@ -31,6 +33,7 @@ export const createController: IController = async (controllerInput: IController
 
     // Initialize use case with dependencies
     const createUseCase = new CreateUseCase({
+      activityCreateRepository,
       createRepository,
       retrieveManyRepository,
       ablyService: AblyService,

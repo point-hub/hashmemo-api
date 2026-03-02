@@ -19,10 +19,12 @@ export interface IDeps {
 
 export interface ISuccessData {
   _id: string
+  username: string
   name: string
-  is_archived: boolean
+  email: string
+  action: string
+  ip: string
   created_at: Date
-  created_by: IAuthUser
 }
 
 /**
@@ -47,14 +49,11 @@ export class RetrieveUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
     return this.success({
       _id: response._id,
       name: response.name,
-      is_archived: response.is_archived,
+      username: response.username,
+      email: response.email,
+      action: response.action,
+      ip: response.ip,
       created_at: response.created_at,
-      created_by: {
-        _id: response.created_by?._id,
-        username: response.created_by?.username,
-        name: response.created_by?.name,
-        email: response.created_by?.email,
-      },
     });
   }
 }

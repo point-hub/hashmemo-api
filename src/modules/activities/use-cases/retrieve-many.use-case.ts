@@ -55,15 +55,12 @@ export class RetrieveManyUseCase extends BaseUseCase<IInput, IDeps, ISuccessData
       data: response.data.map(item => {
         const mapped = {
           _id: item._id,
+          username: item.username,
           name: item.name,
-          is_archived: item.is_archived,
+          email: item.email,
+          action: item.action,
+          ip: item.ip,
           created_at: item.created_at,
-          created_by: {
-            _id: item.created_by?._id,
-            username: item.created_by?.username,
-            name: item.created_by?.name,
-            email: item.created_by?.email,
-          },
         };
 
         // If no fields requested → return full object

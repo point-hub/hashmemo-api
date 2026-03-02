@@ -4,6 +4,7 @@ import type { IAuthorizationService } from '@/modules/_shared/services/authoriza
 import type { IUniqueValidationService } from '@/modules/_shared/services/unique-validation.service';
 import type { IUserAgent } from '@/modules/_shared/types/user-agent.type';
 import type { IAblyService } from '@/modules/ably/services/ably.service';
+import type { ICreateRepository as IActivityCreateRepository } from '@/modules/activities/repositories/create.repository';
 import type { IAuditLogService } from '@/modules/audit-logs/services/audit-log.service';
 import type { IAuthUser } from '@/modules/master/users/interface';
 
@@ -28,6 +29,7 @@ export interface IInput {
 }
 
 export interface IDeps {
+  activityCreateRepository: IActivityCreateRepository
   updateRepository: IUpdateRepository
   retrieveRepository: IRetrieveRepository
   ablyService: IAblyService
@@ -68,6 +70,16 @@ export class VoidUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       voided_reason: input.data.reason,
       voided_at: new Date(),
       voided_by_id: input.authUser._id,
+    });
+    await this.deps.activityCreateRepository.handle({
+      user_id: input.authUser._id,
+      username: input.authUser.username,
+      name: input.authUser.name,
+      email: input.authUser.email,
+      action: 'void',
+      file_id: input.filter._id,
+      ip: input.ip,
+      created_at: new Date(),
     });
 
     // Validate uniqueness: single unique name field.
