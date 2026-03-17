@@ -71,7 +71,7 @@ export class CreateUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       pdf_url: input.data.pdf_url,
       approvals: input.data.approvals,
       signatures: input.data.signatures,
-      status: 'awaiting-signature',
+      status: 'pending',
       is_archived: false,
       created_at: new Date(),
       created_by_id: input.authUser._id,

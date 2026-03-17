@@ -63,7 +63,7 @@ export class SignUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
 
     // Normalizes data (trim).
     const fileEntity = new FileEntity({
-      status: 'rejected',
+      status: 'signed',
     });
 
     // Reject update when no fields have changed

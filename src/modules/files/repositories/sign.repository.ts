@@ -73,7 +73,7 @@ export class SignRepository implements ISignRepository {
                   },
                 },
                 'signed',
-                '$status',
+                'awaiting-signature',
               ],
             },
           },
