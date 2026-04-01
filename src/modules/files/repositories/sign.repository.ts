@@ -26,7 +26,15 @@ export class SignRepository implements ISignRepository {
 
   async handle(data: IData): Promise<ISignOutput> {
     const response = await this.database.collection(collectionName).updateOne(
-      { _id: data._id },
+      {
+        _id: data._id,
+        signatures: {
+          $elemMatch: {
+            user_id: data.user_id,
+            otp: data.otp,
+          },
+        },
+      },
       [
         {
           $set: {
