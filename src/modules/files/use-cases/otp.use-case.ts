@@ -128,10 +128,11 @@ export class OtpUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
     await this.deps.emailService.send(
       {
         to: input.authUser.email!,
-        subject: 'Gunakan OTP ini untuk tanda tangan dokumen anda',
+        subject: `OTP untuk tanda tangan dokumen ${retrieveResponse.name}`,
         template: 'modules/files/emails/otp.hbs',
         context: {
           otp: otp,
+          name: retrieveResponse.name,
         },
       },
     );
