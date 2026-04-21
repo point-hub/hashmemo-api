@@ -81,7 +81,7 @@ export class SignRepository implements ISignRepository {
                   },
                 },
                 'signed',
-                'awaiting-signature',
+                'in-progress',
               ],
             },
           },
