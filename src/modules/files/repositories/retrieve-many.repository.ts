@@ -30,6 +30,7 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
     const pipeline: IPipeline[] = [];
 
     pipeline.push(...this.pipeQueryFilter(query));
+    pipeline.push(...this.pipeSort(query));
     pipeline.push(...this.pipeJoinCreatedById());
     pipeline.push(...this.pipeJoinRejectedById());
     pipeline.push(...this.pipeJoinVoidedById());
@@ -209,6 +210,31 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
           rejected_by: 1,
           rejected_reason: 1,
         },
+      },
+    ];
+  }
+
+  private pipeSort(query: IQuery): IPipeline[] {
+    if (!query?.sort) return [];
+
+    const sortEntries = Object.entries(query.sort).filter(([_, v]) => v === 1 || v === -1);
+
+    if (sortEntries.length === 0) return [];
+
+    const sortStage: Record<string, 1 | -1> = {};
+
+    for (const [key, value] of sortEntries) {
+      // handle nested fields if needed
+      if (key === 'created_by') {
+        sortStage['created_by.username'] = value as 1 | -1;
+      } else {
+        sortStage[key] = value as 1 | -1;
+      }
+    }
+
+    return [
+      {
+        $sort: sortStage,
       },
     ];
   }

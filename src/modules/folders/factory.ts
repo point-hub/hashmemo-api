@@ -12,18 +12,7 @@ export default class FolderFactory extends BaseFactory<IFolder> {
 
   definition() {
     return {
-      code: 'EXAMPLE/' + faker.number.int({ min: 1, max: 99999 }).toString().padStart(5, '0'),
-      name: faker.person.fullName(),
-      age: faker.number.int({ min: 25, max: 99 }),
-      gender: faker.person.gender(),
-      composite_unique_1: faker.person.fullName(),
-      composite_unique_2: faker.person.fullName(),
-      notes: faker.lorem.words(),
-      optional_unique: faker.person.fullName(),
-      optional_composite_unique_1: faker.person.fullName(),
-      optional_composite_unique_2: faker.person.fullName(),
-      xxx_composite_unique_1: faker.person.fullName(),
-      xxx_composite_unique_2: faker.person.fullName(),
+      name: faker.person.firstName(),
       is_archived: false,
       created_at: new Date(),
       created_by_id: undefined, // injected

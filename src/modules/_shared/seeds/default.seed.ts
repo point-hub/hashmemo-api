@@ -1,6 +1,7 @@
 import { type IDatabase } from '@point-hub/papi';
 
 import CounterFactory from '@/modules/counters/factory';
+import FolderFactory from '@/modules/folders/factory';
 import PermissionFactory from '@/modules/master/permissions/factory';
 import RoleFactory from '@/modules/master/roles/factory';
 import UserFactory from '@/modules/master/users/factory';
@@ -68,4 +69,7 @@ export const seed = async (dbConnection: IDatabase, options: Record<string, unkn
   console.info(`u: ${username}`);
   console.info(`p: ${password}`);
   console.info('please change your password immediately');
+
+  const folderFactory = new FolderFactory(dbConnection, options);
+  await folderFactory.create();
 };
