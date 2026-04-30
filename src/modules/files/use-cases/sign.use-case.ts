@@ -61,6 +61,10 @@ export class SignUseCase extends BaseUseCase<IInput, IDeps, ISuccessData> {
       return this.fail({ code: 404, message: 'Resource not found' });
     }
 
+    if (retrieveResponse.status === 'rejected') {
+      return this.fail({ code: 400, message: 'Sign Failed: Document is rejected by others' });
+    }
+
     // Normalizes data (trim).
     const fileEntity = new FileEntity({
       status: 'signed',
