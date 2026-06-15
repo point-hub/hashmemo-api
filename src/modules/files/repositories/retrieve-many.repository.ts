@@ -90,10 +90,12 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
 
     // Filter specific field
     BaseMongoDBQueryFilters.addRegexFilter(filters, 'name', query?.['search.name']);
-
+    console.log(query);
     // Filter exact field
     BaseMongoDBQueryFilters.addExactFilter(filters, 'status', query?.['search.status']);
-    BaseMongoDBQueryFilters.addExactFilter(filters, 'hash', query?.['search.hash']);
+    if (query?.['search.is_hash']) {
+      BaseMongoDBQueryFilters.addExactFilter(filters, 'hash', query?.['search.hash'] || 'x');
+    }
 
     BaseMongoDBQueryFilters.addBooleanFilter(filters, 'is_archived', query?.['search.is_archived']);
 
