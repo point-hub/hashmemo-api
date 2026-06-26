@@ -77,6 +77,19 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
       });
     }
 
+    if (Object.hasOwn(query ?? {}, 'search.email_verification.code')) {
+      if (query?.['search.email_verification.code'] === '') {
+        filters.push({
+          $or: [
+            { 'email_verification.code': 'xxxxxxxxxxx' },
+          ],
+        });
+
+        return [{ $match: { $and: filters } }];
+      }
+      BaseMongoDBQueryFilters.addExactFilter(filters, 'email_verification.code', query?.['search.email_verification.code']);
+    }
+
     // Filter specific field
     BaseMongoDBQueryFilters.addRegexFilter(filters, 'username', query?.['search.username']);
     BaseMongoDBQueryFilters.addRegexFilter(filters, 'name', query?.['search.name']);
@@ -84,7 +97,6 @@ export class RetrieveManyRepository implements IRetrieveManyRepository {
     BaseMongoDBQueryFilters.addRegexFilter(filters, 'role.code', query?.['search.role.code']);
     BaseMongoDBQueryFilters.addRegexFilter(filters, 'role.name', query?.['search.role.name']);
 
-    BaseMongoDBQueryFilters.addExactFilter(filters, 'email_verification.code', query?.['search.email_verification.code']);
     BaseMongoDBQueryFilters.addExactFilter(filters, 'photo_code', query?.['search.photo_code']);
 
     BaseMongoDBQueryFilters.addBooleanFilter(filters, 'is_archived', query?.['search.is_archived']);
